@@ -1,36 +1,61 @@
-import { getCatBreedsData } from "./cat-api";
+import { fetchBreeds, fetchCatByBreed } from "./cat-api.js";
 const refs = {
-    breedSelect: document.querySelector(".breed-select"),
-    infoContain: document.querySelector(".cat-info"),
+    selectEl: document.querySelector(".breed-select"),
+    divInfo: document.querySelector(".cat-info"),
+    loader: document.querySelector(".loader"),
+    error: document.querySelector(".error")
 }
-let allBreeds = [];
-getCatBreedsData()
-    .then(breeds => {
-        allBreeds = breeds;
-        const optionsMarkup = breeds
-            .map(breed => `<option value="${breed.id}">${breed.name}</option>`)
-            .join('');
-        refs.breedSelect.insertAdjacentHTML('beforeend', optionsMarkup);
-        const selectedBreed = refs.breedSelect.value;        
-        renderCatInfo(selectedBreed);
-        refs.breedSelect.addEventListener("change", (e) => {
-            const selectedBreed = e.target.value;
-            renderCatInfo(selectedBreed);
-            console.log(selectedBreed);
-        })
-    })
-    .catch(error => {
-        console.error("Помилка при завантаженні", error);
+refs.error.classList.add("hidden");
+refs.selectEl.classList.add("hidden");
+refs.loader.classList.remove("hidden");
+refs.divInfo.classList.add("hidden");
+fetchBreeds().then((breeds) => {
+    console.log(breeds);
+    refs.loader.classList.add("hidden");    
+    refs.selectEl.classList.remove("hidden");
+    breeds.forEach(breed => {
+        const option = document.createElement("option");
+        option.textContent = breed.name;
+        option.value = breed.id;
+        refs.selectEl.appendChild(option);
     });
+    refs.selectEl.classList.remove("hidden");
+    refs.loader.classList.add("hidden");
+}).catch(err => {
+    console.error(err);
+    refs.loader.classList.add("hidden");
+    refs.error.classList.remove("hidden");
+});
 
-function renderCatInfo(selectedBreed) {
-    const breed = allBreeds.find(breed => breed.id === selectedBreed);
-    if (!breed) return;
-    const markup = `
-        <h2>${breed.name}</h2>
-        <img src="${breed.image?.url || ''}" alt="${breed.name}" width="300">
-        <p><strong>Temperament:</strong> ${breed.temperament}</p>
-        <p>${breed.description}</p>`;
-    refs.infoContain.innerHTML = markup;    
-    }
+
+refs.selectEl.addEventListener("change", () => {
+    const breedId = refs.selectEl.value;
+
+    refs.selectEl.classList.add("hidden");
+    refs.divInfo.classList.add("hidden");
+    refs.loader.classList.remove("hidden");
+
+    fetchCatByBreed(breedId).then(data => {
+        
+        const catData = data[0];
+        const breedData = catData.breeds[0];
+        const markup = `
+        <h2>${breedData.name}</h2>
+        <img src="${catData.url}" alt="${breedData.name}">
+        <p>Temperament ${breedData.temperament}</p>
+        <p>Description ${breedData.description}</p>
+        `;
+        refs.divInfo.innerHTML = markup;
+
+            refs.loader.classList.add("hidden");
+            refs.selectEl.classList.remove("hidden");
+            refs.divInfo.classList.remove("hidden");
+    })
+        .catch(err => {
+            console.error(err);
+            refs.error.classList.remove("hidden");
+            refs.loader.classList.add("hidden");
+    })
+});
+
 

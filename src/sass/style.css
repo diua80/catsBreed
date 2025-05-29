@@ -1,0 +1,30 @@
+
+.hidden{
+    display: none;
+}
+.cat-info {
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-start;
+    align-items: flex-start;
+    flex-wrap: wrap;
+}
+
+.cat-info img {
+    margin: 15px;
+    max-width: 400px;
+    max-height: 100%;
+    margin-right: 10px;
+}
+
+.cat-info h2,
+.cat-info p {
+    
+    width: 400px;
+    margin: 0;
+}
+
+.wrapper {
+    display: flex;
+    flex-direction: column;
+}
